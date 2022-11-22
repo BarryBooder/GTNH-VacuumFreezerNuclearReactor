@@ -11,8 +11,9 @@ local reactor_chamber = component.reactor_chamber
 -- z南:3
 local sourceBoxSide = 4 -- 输入箱子
 local reactorChamberSide = 3 -- 核电仓
-local outPutBoxSide = 2 -- 输出箱子
+local outPutBoxSide = 2 -- 输出箱子e
 local outPutDrawerSide = 0 -- 输出抽屉
+local runTime = 0 -- 正常运行时间
 
 -- 检查原材料箱中原材料数量
 local function checkSourceBoxItems(itemName, itemCount)
@@ -88,34 +89,40 @@ end
 -- 核电仓热量检测
 local function checkReactorChamberHeat()
     if (reactor_chamber.getHeat() >= 1000) then
+        os.execute("cls")
+        print("reactorChamber Heat is " .. reactor_chamber.getHeat() .. " >= 1000")
         stop()
     elseif (reactor_chamber.getHeat() < 1000) then
         start()
+        os.execute("cls")
+        print("reactorChamber is Running!")
     end
 end
 
--- 寻找指定方向储物设备空slot
-local function findNullSlot(boxSide)
-    local box = transposer.getAllStacks(boxSide)
-    for slot, item in pairs(box) do
-        if not (item) then
-            print("slot--->" .. slot + 1)
-            return slot + 1
+-- 物品移除核电仓
+local function remove(removeSlot, removeSide)
+    while true do
+        if transposer.transferItem(reactorChamberSide, removeSide, 1, removeSlot) == 0 then
+            print("outPutBox is Full!")
+            for i = 10, 1, -1 do
+                print("Recheck after " .. i .. " seconds")
+                os.sleep(1)
+            end
+            os.execute("cls")
+        else
+            break
         end
     end
 end
 
--- 物品移除和移入核电仓
-local function removeAndInsert(removeSlot, removeSide, insertItemName)
-    stop()
-    transposer.transferItem(reactorChamberSide, removeSide, 1, removeSlot, findNullSlot(removeSide))
-
+-- 物品移入核电仓
+local function insert(sinkSlot, insertItemName)
     while true do
         local sourceBoxitemList = transposer.getAllStacks(sourceBoxSide).getAll()
         if checkSourceBoxItems(insertItemName, 1) then
             for index, item in pairs(sourceBoxitemList) do
                 if item.name == insertItemName then
-                    transposer.transferItem(sourceBoxSide, reactorChamberSide, 1, index + 1, removeSlot)
+                    transposer.transferItem(sourceBoxSide, reactorChamberSide, 1, index + 1, sinkSlot)
                     break
                 end
             end
@@ -126,10 +133,16 @@ local function removeAndInsert(removeSlot, removeSide, insertItemName)
                 print("Recheck after " .. i .. " seconds")
                 os.sleep(1)
             end
+            os.execute("cls")
         end
     end
+end
 
-    checkReactorChamberHeat()
+-- 物品移除和移入核电仓
+local function removeAndInsert(removeSlot, removeSide, insertItemName)
+    stop()
+    remove(removeSlot, removeSide)
+    insert(removeSlot, insertItemName)
 end
 
 -- 物品监测（需要监测DMG和不需要监测DMG）
@@ -141,43 +154,32 @@ local function checkItemDMG(project)
     for i = 1, #project do
         for index, slot in pairs(project[i].slot) do
             if project[i].dmg ~= -1 then
-                if reactorChamberList[slot - 1].damage >= project[i].dmg then
-                    removeAndInsert(slot, outPutBoxSide, project[i].name)
+                if reactorChamberList[slot - 1].damage ~= nil then
+                    if reactorChamberList[slot - 1].damage >= project[i].dmg then
+                        removeAndInsert(slot, outPutBoxSide, project[i].name)
+                    end
+                else
+                    insert(slot, project[i].name)
                 end
+
             elseif project[i].dmg == -1 then
-                -- print("reactorChamberList[slot - 1].name----->"..reactorChamberList[slot - 1].name)
-                -- print("project[i].name---->"..project[i].name)
-                -- print("project[i].changeName--->"..project[i].changeName)
-                if reactorChamberList[slot - 1].name ~= project[i].name and
-                    reactorChamberList[slot - 1].name == project[i].changeName then
-                    removeAndInsert(slot, outPutDrawerSide, project[i].name)
+                if reactorChamberList[slot - 1].name ~= nil then
+                    if reactorChamberList[slot - 1].name ~= project[i].name and
+                        reactorChamberList[slot - 1].name == project[i].changeName then
+                        removeAndInsert(slot, outPutDrawerSide, project[i].name)
+                    end
+                else
+                    insert(slot, project[i].name)
                 end
             end
         end
     end
 end
 
--- 检查核电仓是否塞满
-local function isReactorChamberFull()
-    local reactorChamber = transposer.getAllStacks(reactorChamberSide)
-    local reactorChamberList = reactorChamber.getAll()
-    local reactorChamberLenth = reactorChamber.count()
-
-    local sum = 0
-    for slot, item in pairs(reactorChamberList) do
-        if item ~= nil then
-            sum = sum + 1
-        end
-    end
-    if sum == reactorChamberLenth then
-        return true
-    else
-        return false
-    end
-end
-
 -- 核电仓运行时
 local function reactorChamberRunTime(project)
+    os.execute("cls")
+    print("reactorChamber is Running!")
     while true do
         checkReactorChamberHeat()
         checkItemDMG(project)
@@ -218,6 +220,7 @@ local function startWithConfig()
                 print("Recheck after " .. i .. " seconds")
                 os.sleep(1)
             end
+            os.execute("cls")
         end
     end
 end

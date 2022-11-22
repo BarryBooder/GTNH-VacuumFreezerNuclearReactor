@@ -1,7 +1,15 @@
-# GTNH-SevereColdNuclearPower
-## GTNH强冷核电 OC 解决方案
+# GTNH强冷核电 OC 解决方案
 
-# 配置 JSON 文件格式
+## 材料需求
+0. 核电一套
+1. OC 电脑一套（显示器、机箱、cpu、gpu、内存等）
+2. 红石IO端口一个
+3. 适配器一个
+4. 转运器一个
+5. 箱子两个
+6. 抽屉一个（箱子也行）
+
+## 配置 JSON 文件格式
 
 ```(json)
 {
@@ -24,6 +32,9 @@
     ……
 }
 ```
+
+## 推荐摆放图示
+![Snipaste_2022-11-23_06-39-43](https://user-images.githubusercontent.com/49380228/203435807-548c7143-3195-4f62-96a8-7ca6d71113ed.png)
 
 
 

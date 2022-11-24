@@ -159,6 +159,7 @@ local function checkItemDMG(project)
                         removeAndInsert(slot, outPutBoxSide, project[i].name)
                     end
                 else
+                    stop()
                     insert(slot, project[i].name)
                 end
 
@@ -169,6 +170,7 @@ local function checkItemDMG(project)
                         removeAndInsert(slot, outPutDrawerSide, project[i].name)
                     end
                 else
+                    stop()
                     insert(slot, project[i].name)
                 end
             end
@@ -181,8 +183,8 @@ local function reactorChamberRunTime(project)
     os.execute("cls")
     print("reactorChamber is Running!")
     while true do
-        checkReactorChamberHeat()
         checkItemDMG(project)
+        checkReactorChamberHeat()
     end
 end
 
